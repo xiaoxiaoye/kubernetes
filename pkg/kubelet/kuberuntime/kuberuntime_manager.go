@@ -988,6 +988,7 @@ func (m *kubeGenericRuntimeManager) computePodActions(ctx context.Context, pod *
 	return changes
 }
 
+// yejx: 容器运行时，创建容器的主要函数
 // SyncPod syncs the running pod into the desired pod by executing following steps:
 //
 //  1. Compute sandbox and container changes.

@@ -731,6 +731,7 @@ func isPodStatusCacheTerminal(status *kubecontainer.PodStatus) bool {
 	return runningContainers == 0 && runningSandboxes == 0
 }
 
+// yejx: pod创建、删除的主要逻辑
 // UpdatePod carries a configuration change or termination state to a pod. A pod is either runnable,
 // terminating, or terminated, and will transition to terminating if: deleted on the apiserver,
 // discovered to have a terminal phase (Succeeded or Failed), or evicted by the kubelet.

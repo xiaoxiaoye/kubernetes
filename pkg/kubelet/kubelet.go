@@ -399,6 +399,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		klog.InfoS("Kubelet is running in standalone mode, will skip API server sync")
 	}
 
+	// yejx: 创建pod更新源，包括三类，分别是基于文件，远程url, api-server
 	if kubeDeps.PodConfig == nil {
 		var err error
 		kubeDeps.PodConfig, err = makePodSourceConfig(kubeCfg, kubeDeps, nodeName, nodeHasSynced)
@@ -1537,6 +1538,7 @@ func (kl *Kubelet) initializeRuntimeDependentModules() {
 	}
 }
 
+// kubelet业务主流程
 // Run starts the kubelet reacting to config updates
 func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate) {
 	ctx := context.Background()
@@ -1635,6 +1637,7 @@ func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate) {
 	kl.syncLoop(ctx, updates, kl)
 }
 
+// yejx: 管理pod的主要生命周期
 // SyncPod is the transaction script for the sync of a single pod (setting up)
 // a pod. This method is reentrant and expected to converge a pod towards the
 // desired state of the spec. The reverse (teardown) is handled in
@@ -2294,6 +2297,7 @@ func (kl *Kubelet) canRunPod(pod *v1.Pod) lifecycle.PodAdmitResult {
 	return lifecycle.PodAdmitResult{Admit: true}
 }
 
+// yejx: kubelet pod事件处理的主流程
 // syncLoop is the main loop for processing changes. It watches for changes from
 // three channels (file, apiserver, and http) and creates a union of them. For
 // any new change seen, will run a sync against desired state and running state. If

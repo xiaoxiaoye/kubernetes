@@ -53,7 +53,7 @@ LIMITED_SWAP=${LIMITED_SWAP:-""}
 # required for cni installation
 CNI_CONFIG_DIR=${CNI_CONFIG_DIR:-/etc/cni/net.d}
 CNI_PLUGINS_VERSION=${CNI_PLUGINS_VERSION:-"v1.2.0"}
-CNI_TARGETARCH=${CNI_TARGETARCH:-amd64}
+CNI_TARGETARCH=${CNI_TARGETARCH:-arm64}
 CNI_PLUGINS_TARBALL="${CNI_PLUGINS_VERSION}/cni-plugins-linux-${CNI_TARGETARCH}-${CNI_PLUGINS_VERSION}.tgz"
 CNI_PLUGINS_URL="https://github.com/containernetworking/plugins/releases/download/${CNI_PLUGINS_TARBALL}"
 CNI_PLUGINS_AMD64_SHA256SUM=${CNI_PLUGINS_AMD64_SHA256SUM:-"f3a841324845ca6bf0d4091b4fc7f97e18a623172158b72fc3fdcdb9d42d2d37"}
@@ -897,6 +897,8 @@ EOF
     # shellcheck disable=SC2024
     sudo -E "${GO_OUT}/kubelet" "${all_kubelet_flags[@]}" \
       --config="${TMP_DIR}"/kubelet.yaml >"${KUBELET_LOG}" 2>&1 &
+
+    echo "${GO_OUT}/kubelet ${all_kubelet_flags[@]} --config=${TMP_DIR}/kubelet.yaml"
     KUBELET_PID=$!
 
     # Quick check that kubelet is running.
@@ -1154,7 +1156,6 @@ function install_cni {
     && rm -f "${TMP_DIR}"/cni.sha256 \
     && sudo mkdir -p /opt/cni/bin \
     && sudo tar -C /opt/cni/bin -xzvf "${TMP_DIR}"/cni."${CNI_TARGETARCH}".tgz \
-    && rm -rf "${TMP_DIR}"/cni."${CNI_TARGETARCH}".tgz \
     && sudo find /opt/cni/bin -type f -not \( \
          -iname host-local \
          -o -iname bridge \
