@@ -306,6 +306,9 @@ function kube::release::create_docker_images_for_server() {
       kube::log::error "git version information missing; cannot create Docker tag"
       return 1
     fi
+    
+
+    kube::log::status "##docker_tag:${docker_tag}, KUBE_GIT_VERSION:${KUBE_GIT_VERSION}"
 
     # provide `--pull` argument to `docker build` if `KUBE_BUILD_PULL_LATEST_IMAGES`
     # is set to y or Y; otherwise try to build the image without forcefully
@@ -353,7 +356,7 @@ function kube::release::create_docker_images_for_server() {
 
         # If we are building an official/alpha/beta release we want to keep
         # docker images and tag them appropriately.
-        local -r release_docker_image_tag="${KUBE_DOCKER_REGISTRY-$docker_registry}/${binary_name}-${arch}:${KUBE_DOCKER_IMAGE_TAG-$docker_tag}"
+        local -r release_docker_image_tag="${KUBE_DOCKER_REGISTRY-$docker_registry}/${binary_name}:${KUBE_DOCKER_IMAGE_TAG-$docker_tag}"
         if [[ "${release_docker_image_tag}" != "${docker_image_tag}" ]]; then
           kube::log::status "Tagging docker image ${docker_image_tag} as ${release_docker_image_tag}"
           "${DOCKER[@]}" rmi "${release_docker_image_tag}" 2>/dev/null || true
