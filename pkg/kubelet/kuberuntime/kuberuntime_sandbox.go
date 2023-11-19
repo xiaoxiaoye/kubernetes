@@ -37,6 +37,7 @@ import (
 	netutils "k8s.io/utils/net"
 )
 
+// yejx: 创建sandbox的主要逻辑
 // createPodSandbox creates a pod sandbox and returns (podSandBoxID, message, error).
 func (m *kubeGenericRuntimeManager) createPodSandbox(ctx context.Context, pod *v1.Pod, attempt uint32) (string, string, error) {
 	podSandboxConfig, err := m.generatePodSandboxConfig(pod, attempt)

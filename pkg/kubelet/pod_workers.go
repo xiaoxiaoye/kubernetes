@@ -1283,6 +1283,7 @@ func (p *podWorkers) podWorkerLoop(podUID types.UID, podUpdates <-chan struct{})
 				}
 
 			default:
+				klog.V(4).InfoS("##SyncPod", "pod", podRef, "sandbox's status", status.SandboxStatuses)
 				isTerminal, err = p.podSyncer.SyncPod(ctx, update.Options.UpdateType, update.Options.Pod, update.Options.MirrorPod, status)
 			}
 
