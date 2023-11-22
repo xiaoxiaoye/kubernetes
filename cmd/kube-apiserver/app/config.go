@@ -35,8 +35,7 @@ type Config struct {
 	ExtraConfig
 }
 
-type ExtraConfig struct {
-}
+type ExtraConfig struct{}
 
 type completedConfig struct {
 	Options options.CompletedOptions
