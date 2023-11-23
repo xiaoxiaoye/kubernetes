@@ -355,7 +355,7 @@ func (h *HTTPExtender) Prioritize(pod *v1.Pod, nodes []*v1.Node) (*extenderv1.Ho
 	return &result, h.weight, nil
 }
 
-// yejx:通过调用apiserver的bind接口进行接口绑定
+// yejx:通过调用apiserver的bind接口进行节点绑定
 // Bind delegates the action of binding a pod to a node to the extender.
 func (h *HTTPExtender) Bind(binding *v1.Binding) error {
 	var result extenderv1.ExtenderBindingResult
