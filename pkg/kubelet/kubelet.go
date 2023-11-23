@@ -332,6 +332,7 @@ func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration, 
 	return nil
 }
 
+// yejx: 创建并初始化kubelet对象
 // NewMainKubelet instantiates a new Kubelet object along with all the required internal modules.
 // No initialization of Kubelet and its modules should happen here.
 func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
@@ -560,6 +561,10 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 		klet.cloudResourceSyncManager = cloudresource.NewSyncManager(klet.cloud, nodeName, klet.nodeStatusUpdateFrequency)
 	}
 
+	// yejx: 设置configmap和secret的管理器, 用于管理configmap和secret的变化
+	// 策略1: 监听变化
+	// 策略2: 定时刷新
+	// 策略3: 通过api-server获取
 	var secretManager secret.Manager
 	var configMapManager configmap.Manager
 	if klet.kubeClient != nil {
@@ -707,6 +712,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	eventChannel := make(chan *pleg.PodLifecycleEvent, plegChannelCapacity)
 
+	// yejx: 创建pleg, 用于监听容器的变化, 通过pleg的事件通道，将容器的变化通知给kubelet
 	if utilfeature.DefaultFeatureGate.Enabled(features.EventedPLEG) {
 		// adjust Generic PLEG relisting period and threshold to higher value when Evented PLEG is turned on
 		genericRelistDuration := &pleg.RelistDuration{
@@ -909,6 +915,7 @@ type serviceLister interface {
 	List(labels.Selector) ([]*v1.Service, error)
 }
 
+// yejx: kubelet实现类
 // Kubelet is the main kubelet implementation.
 type Kubelet struct {
 	kubeletConfiguration kubeletconfiginternal.KubeletConfiguration
@@ -1538,7 +1545,7 @@ func (kl *Kubelet) initializeRuntimeDependentModules() {
 	}
 }
 
-// kubelet业务主流程
+// yejx: kubelet业务主流程
 // Run starts the kubelet reacting to config updates
 func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate) {
 	ctx := context.Background()

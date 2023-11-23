@@ -56,6 +56,7 @@ type podStartupSLIObserver interface {
 	ObservedPodOnWatch(pod *v1.Pod, when time.Time)
 }
 
+// yejx: PodConfig会把多个pod配置源合并成一个一致的结构，然后把增量变化通知给监听者。
 // PodConfig is a configuration mux that merges many sources of pod configuration into a single
 // consistent structure, and then delivers incremental change notifications to listeners
 // in order.
@@ -432,7 +433,6 @@ func podsDifferSemantically(existing, ref *v1.Pod) bool {
 //   - else return all false
 //     Now, needUpdate, needGracefulDelete and needReconcile should never be both true
 func checkAndUpdatePod(existing, ref *v1.Pod) (needUpdate, needReconcile, needGracefulDelete bool) {
-
 	// 1. this is a reconcile
 	// TODO: it would be better to update the whole object and only preserve certain things
 	//       like the source annotation or the UID (to ensure safety)
