@@ -42,6 +42,7 @@ import (
 	_ "k8s.io/kubernetes/pkg/cloudprovider/providers"
 )
 
+// yejx: 添加存储插件
 // ProbeVolumePlugins collects all volume plugins into an easy to use list.
 func ProbeVolumePlugins(featureGate featuregate.FeatureGate) ([]volume.VolumePlugin, error) {
 	allPlugins := []volume.VolumePlugin{}

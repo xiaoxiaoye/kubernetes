@@ -330,7 +330,6 @@ func mergeKubeletConfigurations(kubeletConfig *kubeletconfiginternal.KubeletConf
 		}
 		return nil
 	})
-
 	if err != nil {
 		return fmt.Errorf("failed to walk through kubelet dropin directory %q: %w", kubeletDropInConfigDir, err)
 	}
@@ -426,7 +425,7 @@ func UnsecuredDependencies(s *options.KubeletServer, featureGate featuregate.Fea
 	mounter := mount.New(s.ExperimentalMounterPath)
 	subpather := subpath.New(mounter)
 	hu := hostutil.NewHostUtil()
-	var pluginRunner = exec.New()
+	pluginRunner := exec.New()
 
 	plugins, err := ProbeVolumePlugins(featureGate)
 	if err != nil {
@@ -455,7 +454,8 @@ func UnsecuredDependencies(s *options.KubeletServer, featureGate featuregate.Fea
 		OSInterface:         kubecontainer.RealOS{},
 		VolumePlugins:       plugins,
 		DynamicPluginProber: GetDynamicPluginProber(s.VolumePluginDir, pluginRunner),
-		TLSOptions:          tlsOptions}, nil
+		TLSOptions:          tlsOptions,
+	}, nil
 }
 
 // Run runs the specified KubeletServer with the given Dependencies. This should never exit.
@@ -541,6 +541,7 @@ func getReservedCPUs(machineInfo *cadvisorapi.MachineInfo, cpus string) (cpuset.
 	return reservedCPUSet, nil
 }
 
+// yejx: kubelet的入口函数
 func run(ctx context.Context, s *options.KubeletServer, kubeDeps *kubelet.Dependencies, featureGate featuregate.FeatureGate) (err error) {
 	// Set global feature gates based on the value on the initial KubeletServer
 	err = utilfeature.DefaultMutableFeatureGate.SetFromMap(s.KubeletConfiguration.FeatureGates)
@@ -598,6 +599,7 @@ func run(ctx context.Context, s *options.KubeletServer, kubeDeps *kubelet.Depend
 		}
 	}
 
+	// yejx: cloud provider
 	if kubeDeps.Cloud == nil {
 		if !cloudprovider.IsExternal(s.CloudProvider) {
 			cloudprovider.DeprecationWarningForProvider(s.CloudProvider)
@@ -639,6 +641,10 @@ func run(ctx context.Context, s *options.KubeletServer, kubeDeps *kubelet.Depend
 		}
 		kubeDeps.OnHeartbeatFailure = onHeartbeatFailure
 
+		// yejx: 创建kubeclient, 用于和apiserver通信,会创建3个client，分别用于
+		// 1. kubelet client 用于获取pod，进行相关容器操作
+		// 2. event client 用于发送event
+		// 3. heartbeat client 用于发送heartbeat
 		kubeDeps.KubeClient, err = clientset.NewForConfig(clientConfig)
 		if err != nil {
 			return fmt.Errorf("failed to initialize kubelet client: %w", err)
@@ -1163,6 +1169,7 @@ func setContentTypeForClient(cfg *restclient.Config, contentType string) {
 	}
 }
 
+// yejx: kubelet的入口函数
 // RunKubelet is responsible for setting up and running a kubelet.  It is used in three different applications:
 //
 //	1 Integration tests
@@ -1253,7 +1260,8 @@ func createAndInitKubelet(kubeServer *options.KubeletServer,
 	hostname string,
 	hostnameOverridden bool,
 	nodeName types.NodeName,
-	nodeIPs []net.IP) (k kubelet.Bootstrap, err error) {
+	nodeIPs []net.IP,
+) (k kubelet.Bootstrap, err error) {
 	// TODO: block until all sources have delivered at least one update to the channel, or break the sync loop
 	// up into "per source" synchronizations
 

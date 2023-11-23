@@ -946,6 +946,7 @@ func init() {
 	runtime.Must(utilfeature.DefaultMutableFeatureGate.Add(defaultKubernetesFeatureGates))
 }
 
+// yejx: kubelet默认特性列表
 // defaultKubernetesFeatureGates consists of all known Kubernetes-specific feature keys.
 // To add a new feature, define a key for it above and add it here. The features will be
 // available throughout Kubernetes binaries.
@@ -1019,7 +1020,7 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 
 	ExperimentalHostUserNamespaceDefaultingGate: {Default: false, PreRelease: featuregate.Deprecated, LockToDefault: true}, // remove in 1.30
 
-	GRPCContainerProbe: {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, //remove in 1.29
+	GRPCContainerProbe: {Default: true, PreRelease: featuregate.GA, LockToDefault: true}, // remove in 1.29
 
 	GracefulNodeShutdown: {Default: true, PreRelease: featuregate.Beta},
 

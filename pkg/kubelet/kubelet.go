@@ -312,6 +312,7 @@ func makePodSourceConfig(kubeCfg *kubeletconfiginternal.KubeletConfiguration, ku
 	return cfg, nil
 }
 
+// yejx: 创建cri客户端
 // PreInitRuntimeService will init runtime service before RunKubelet.
 func PreInitRuntimeService(kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *Dependencies) error {
 	remoteImageEndpoint := kubeCfg.ImageServiceEndpoint
@@ -785,8 +786,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	// NewInitializedVolumePluginMgr initializes some storageErrors on the Kubelet runtimeState (in csi_plugin.go init)
 	// which affects node ready status. This function must be called before Kubelet is initialized so that the Node
 	// ReadyState is accurate with the storage state.
-	klet.volumePluginMgr, err =
-		NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
+	klet.volumePluginMgr, err = NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
 	if err != nil {
 		return nil, err
 	}
@@ -2244,7 +2244,8 @@ func (kl *Kubelet) rejectPod(pod *v1.Pod, reason, message string) {
 	kl.statusManager.SetPodStatus(pod, v1.PodStatus{
 		Phase:   v1.PodFailed,
 		Reason:  reason,
-		Message: "Pod was rejected: " + message})
+		Message: "Pod was rejected: " + message,
+	})
 }
 
 // canAdmitPod determines if a pod can be admitted, and gives a reason if it
@@ -2378,7 +2379,8 @@ func (kl *Kubelet) syncLoop(ctx context.Context, updates <-chan kubetypes.PodUpd
 //   - health manager: sync pods that have failed or in which one or more
 //     containers have failed health checks
 func (kl *Kubelet) syncLoopIteration(ctx context.Context, configCh <-chan kubetypes.PodUpdate, handler SyncHandler,
-	syncCh <-chan time.Time, housekeepingCh <-chan time.Time, plegCh <-chan *pleg.PodLifecycleEvent) bool {
+	syncCh <-chan time.Time, housekeepingCh <-chan time.Time, plegCh <-chan *pleg.PodLifecycleEvent,
+) bool {
 	select {
 	case u, open := <-configCh:
 		// Update from a config source; dispatch it to the right handler
@@ -2559,7 +2561,7 @@ func (kl *Kubelet) HandlePodAdditions(pods []*v1.Pod) {
 				}
 				// For new pod, checkpoint the resource values at which the Pod has been admitted
 				if err := kl.statusManager.SetPodAllocation(podCopy); err != nil {
-					//TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
+					// TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
 					klog.ErrorS(err, "SetPodAllocation failed", "pod", klog.KObj(pod))
 				}
 			} else {
@@ -2802,7 +2804,7 @@ func (kl *Kubelet) handlePodResourcesResize(pod *v1.Pod) *v1.Pod {
 	if fit {
 		// Update pod resource allocation checkpoint
 		if err := kl.statusManager.SetPodAllocation(updatedPod); err != nil {
-			//TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
+			// TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
 			klog.ErrorS(err, "SetPodAllocation failed", "pod", klog.KObj(updatedPod))
 			return pod
 		}
@@ -2810,7 +2812,7 @@ func (kl *Kubelet) handlePodResourcesResize(pod *v1.Pod) *v1.Pod {
 	if resizeStatus != "" {
 		// Save resize decision to checkpoint
 		if err := kl.statusManager.SetPodResizeStatus(updatedPod.UID, resizeStatus); err != nil {
-			//TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
+			// TODO(vinaykul,InPlacePodVerticalScaling): Can we recover from this in some way? Investigate
 			klog.ErrorS(err, "SetPodResizeStatus failed", "pod", klog.KObj(updatedPod))
 			return pod
 		}
@@ -2893,7 +2895,8 @@ func (kl *Kubelet) ResyncInterval() time.Duration {
 
 // ListenAndServe runs the kubelet HTTP server.
 func (kl *Kubelet) ListenAndServe(kubeCfg *kubeletconfiginternal.KubeletConfiguration, tlsOptions *server.TLSOptions,
-	auth server.AuthInterface, tp trace.TracerProvider) {
+	auth server.AuthInterface, tp trace.TracerProvider,
+) {
 	server.ListenAndServeKubeletServer(kl, kl.resourceAnalyzer, kubeCfg, tlsOptions, auth, tp)
 }
 
